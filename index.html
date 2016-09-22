@@ -1,0 +1,180 @@
+
+
+<!DOCTYPE html>
+<html lang="en" ng-app="myApp">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="../../favicon.ico">
+
+    <title>Scale API - Image Annotation</title>
+
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <!-- Custom styles for this template -->
+    <link href="css/index.css" rel="stylesheet">
+
+    <script src="js/bbox_annotator.js?v=3"></script>
+
+  </head>
+
+  <body ng-controller="TaskController">
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Scale API - Image Annotation</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="#">Home</a></li>
+            <li><a href="#">Annotated Images</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+          <ul class="nav nav-sidebar">
+            <div class="radio" ng-repeat='object in objects_to_annotate'>
+              <label>
+                <input type="radio" name="optionsRadios" id="optionsRadios1" value="option1" checked>
+                {{object}}
+              </label>
+            </div>
+          </ul>
+          <ul class="nav nav-sidebar">
+            <div class="alert alert-warning alert-dismissible" role="alert">
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              Box1
+            </div>
+            <div class="alert alert-warning alert-dismissible" role="alert">
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              Box2
+            </div>
+          </ul>
+          <ul class="nav nav-sidebar">
+            <li class="active"><a href="#">Overview <span class="sr-only">(current)</span></a></li>
+            <li><a href="#">Maybe</a></li>
+            <li><a href="#">Useful</a></li>
+          </ul>
+
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-7 col-md-offset-2 main">
+          <div id="bbox_annotator" style="display:inline-block"></div>
+          <input class="btn btn-default" type="submit" value="Submit">
+          <input class="btn btn-default" type="submit" value="Reset" id="reset_button">
+          <input class="btn btn-default" type="submit" value="Broken" id="broken_button">
+          <h1 class="page-header">Messages</h1>
+          <p ng-bind="message"></p>
+        </div>
+        <div class="col-md-3">
+            <h1>Info</h1>
+            <p>Task ID: {{task_id}}<p>
+            <p>Instruction: {{instruction}}<p>
+            <p>Urgency: {{urgency}}<p>
+            <img ng-repeat='task in tasks' src="{{task.attachment}}" alt="{{task.task_id}}" width="200">
+            <textarea id="annotation_data" name="annotation" rows="30" cols="30" style="font-family:monospace;" readonly></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery.min.js"><\/script>')</script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+    var annotator;
+    function getParameterByName(name) {
+      var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+      return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+    }
+
+    function renderTask (task) {
+      // Can be one of ['text', 'select', 'fixed']
+      var inputMethod = getParameterByName("input");
+      // Initialize the bounding-box annotator.
+      annotator = new BBoxAnnotator({
+        url: task.attachment,
+        input_method: "fixed",
+        labels: task.objects_to_annotate,
+        onchange: function(entries, multiplier) {
+          // Input the text area on change. Use "hidden" input tag unless debugging.
+          // <input id="annotation_data" name="annotation_data" type="hidden" />
+          // $("#annotation_data").val(JSON.stringify(entries))
+          $("#annotation_data").text(JSON.stringify(entries, null, "  "));
+          console.log(entries); 
+          console.log(multiplier); 
+        }
+      });
+      // Initialize the reset button.
+      $("#reset_button").click(function(e) {
+        annotator.clear_all();
+      })
+    }
+    $(document).ready(function() {
+    });
+    </script>
+    <script>
+        var current_task = {}
+        var app = angular.module('myApp', []);
+
+        app.factory('socket', ['$rootScope', function($rootScope) {
+          var socket = io.connect();
+
+          return {
+            on: function(eventName, callback){
+              socket.on(eventName, callback);
+            },
+            emit: function(eventName, data) {
+              socket.emit(eventName, data);
+            }
+          };
+        }]);
+
+        app.controller('TaskController', function($scope, socket) {
+            socket.on('connect', function () {
+                $scope.$apply(function() {
+                });
+            });
+            socket.on('task', function (msg) {
+                $scope.$apply(function() {
+                });
+            });
+            socket.on('tasks', function (msg) {
+                $scope.$apply(function() {
+                    current_task = msg[0];
+                    $scope.task_id = current_task._id;
+                    $scope.callback_url = current_task.callback_url;
+                    $scope.created_at = current_task.created_at;
+                    $scope.instruction = current_task.instruction;
+                    $scope.objects_to_annotate = current_task.objects_to_annotate;
+                    $scope.urgency = current_task.urgency;
+                    $scope.with_labels = current_task.with_labels;
+                    console.log(msg);
+                    renderTask(current_task);
+                    $scope.tasks = msg.splice(1);
+                    console.log(msg);
+                });
+            });
+        });
+    </script>
+  </body>
+</html>
