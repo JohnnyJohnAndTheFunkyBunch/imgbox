@@ -90,7 +90,7 @@
                 <p><span class="boldme">Task ID:</span> {{task_id}}<p>
                 <p><span class="boldme">Created at:</span> {{created_at}}<p>
                 <p><span class="boldme">With Labels:</span> {{with_labels ? 'true' : 'false'}}<p>
-                <p><span class="boldme">Urgency:</span> {{urgency}}<p>
+                <p><span class="boldme urgent_{{urgency}}">Urgency: {{urgency}} </span><p>
                 <p><span class="boldme">Original Image:</span> <a href="{{attachment}}">Link</a><p>
             </div>
             <div id="annotated_box">
