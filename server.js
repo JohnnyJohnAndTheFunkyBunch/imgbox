@@ -15,7 +15,14 @@ var basic = auth.basic({
     callback(username == 'APIKEY'); // Insert your own authentication methods
 });
 
+var basicfront = auth.basic({
+    realm: 'SUPER SECRET STUFF FRONT END'
+}, function(username, password, callback) {
+    callback(username == 'Admin' && password == 'scaleapi'); // Insert your own authentication methods
+});
+
 var authMiddleware = auth.connect(basic);
+var authMiddlewarefront = auth.connect(basicfront);
 
 var mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost:27017/imgbox');
@@ -33,26 +40,15 @@ app.use(bodyParser.json());
 
 var port = process.env.PORT || 8080; // set our port
 
-// Front End
+// Front End Page
 
-app.get('/', function(req, res) {
-    Task.find({
-        status: "pending"
-    }, function(err, tasks) {
-        res.sendfile('index.html');
-    });
+app.get('/', authMiddlewarefront, function(req, res) {
+    res.sendfile('index.html');
 });
 
 // ROUTES FOR OUR API
 // =============================================================================
 var router = express.Router(); // get an instance of the express Router
-
-// test route to make sure everything is working (accessed at GET http://localhost:8080/api)
-router.get('/', function(req, res) {
-    res.json({
-        message: 'hooray! welcome to our api!'
-    });
-});
 
 // Main entry point for image annotations
 router.post('/annotation', authMiddleware, function(req, res) {

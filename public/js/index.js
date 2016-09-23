@@ -1,3 +1,6 @@
+/*
+============ Initializing Annotator ============
+*/
 var annotator;
 var annotations = []
 
@@ -51,6 +54,10 @@ function renderTask(task) {
     });
 }
 
+/*
+============ Initializing Angular ============
+*/
+
 var current_task = {};
 var current_index = 0;
 var all_tasks = [];
@@ -81,6 +88,10 @@ app.controller('TaskController', function($scope, socket) {
         $scope.with_labels = current_task.with_labels;
         renderTask(current_task);
     }
+
+/*
+============ DOM Element Actions ============
+*/
 
     $(document).keypress(function(e) {
         if (e.which == 13 || e.which == 32) { // enter or space
@@ -122,22 +133,48 @@ app.controller('TaskController', function($scope, socket) {
         current_task = all_tasks[index];
         load_task();
     };
+
+/*
+============ WebSocket Controller ============
+*/
+    
+    // On connection, just output on console
     socket.on('connect', function() {
-        $scope.$apply(function() {});
-    });
-    socket.on('message', function(msg) {
         $scope.$apply(function() {
-            console.log(msg);
-            $scope.message = msg;
+            console.log("Connected to WebSocket Server");
         });
     });
-    socket.on('task', function(msg) {
-        $scope.$apply(function() {});
+
+    // All messages or errors will be outputed in the message box
+    socket.on('message', function(msg) {
+        $scope.$apply(function() {
+            var now = new Date();
+            $scope.message = msg;
+            var old_text = $("#output_message").text();
+            $("#output_message").text(old_text + now + " - " + msg + "\n");
+            $(document).ready(function(){
+                $('#output_message').scrollTop($('#output_message')[0].scrollHeight);
+            });
+        });
     });
+
+    // All tasks get sent to front end, and will load task 
+    // (for scalability, do not send all tasks)
     socket.on('tasks', function(msg) {
         $scope.$apply(function() {
             all_tasks = msg.slice();
             if (all_tasks.length == 0) {
+                $scope.task_id = '';
+                $scope.callback_url = '';
+                $scope.attachment = '';
+                $scope.created_at = '';
+                $scope.instruction = '';
+                $scope.objects_to_annotate = '';
+                $scope.urgency = '';
+                $scope.with_labels = false;
+                all_tasks = [];
+                current_task = {};
+                $scope.tasks = all_tasks;
                 $("#bbox_annotator").empty().append("<h1>You're all done. You can go home now</h1>");
                 $("#annotated_box").empty().append("<h3>Annotations</h3>");
             }

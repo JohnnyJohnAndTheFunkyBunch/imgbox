@@ -103,3 +103,119 @@ body {
   display: inline-block;
   border-radius: 50%;
 }
+
+.line {
+    margin-bottom: 0px;
+}
+.entry {
+    margin: 5px;
+    padding: 5px;
+    background-color: #f5f5f5;
+}
+.image_frame {
+    box-shadow: 3px 3px 3px #ddd;
+}
+#sortby {
+    cursor: default;
+    color:white;
+}
+#right_bar {
+    background-color: #f5f5f5;
+    border-left: 1px solid #eee;
+    overflow-x: hidden;
+    overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
+    height: 100vh;
+}
+#object_types {
+    border: 1px solid #eee;
+    background-color: white;
+    margin: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    box-shadow: 2px 2px 2px #ddd;
+}
+#next_images {
+    border: 1px solid #eee;
+    background-color: white;
+    margin: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    box-shadow: 2px 2px 2px #ddd;
+}
+#info_box {
+    border: 1px solid #eee;
+    background-color: white;
+    margin: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    box-shadow: 2px 2px 2px #ddd;
+}
+#annotated_box {
+    border: 1px solid #eee;
+    background-color: white;
+    margin: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    box-shadow: 2px 2px 1px #ddd;
+    min-height: 400px;
+}
+#annotator_buttons_right {
+    float: right;
+}
+#annotator_buttons_left {
+    float: left;
+}
+.boldme {
+    font-weight: bold;
+}
+.mythumbnail {
+    margin: 5px;
+    padding: 2px;
+}
+.thumb_container {
+    cursor: pointer;
+}
+.thumb_container:hover {
+    outline-color: black;
+    outline-style: outset;
+}
+.glyphicon-stop {
+    top: 25px;
+    left: 10px;
+}
+.urgent_week {
+    color: #3D4F7B;
+}
+.urgent_day {
+    color: #B6B74F;
+}
+.urgent_immediete {
+    color: #B8524F;
+}
+.border_immediete {
+    margin: 5px;
+    padding: 2px;
+    border: 1px solid red;
+}
+h3 {
+    margin: 5px;
+    margin-bottom: 10px;
+}
+#messages_box {
+    margin-top: 10px;
+}
+#message_line {
+    font-weight: Normal;
+}
+[ng\:cloak], [ng-cloak], .ng-cloak {
+  display: none !important;
+}
+
