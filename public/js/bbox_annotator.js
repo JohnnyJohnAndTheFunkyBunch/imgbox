@@ -22,6 +22,7 @@
       });
       this.selector.hide();
       this.create_label_box(options);
+      this.radio = options.radio.val();
     }
 
     BBoxSelector.prototype.create_label_box = function(options) {
@@ -112,7 +113,7 @@
       this.label_box.hide();
       this.selector.hide();
       data = this.rectangle();
-      data.label = $.trim(this.label_input.val().toLowerCase());
+      data.label = $.trim($('input:radio:checked').val());
       if (options.input_method !== 'fixed') {
         this.label_input.val('');
       }
@@ -242,12 +243,6 @@
             if (data.label) {
               annotator.add_entry(data);
               if (annotator.onchange) {
-                  for (i = 0; i < annotator.entries.length; i++) { 
-                      annotator.entries[i].width = Math.round(annotator.entries[i].width * multiplier);
-                      annotator.entries[i].height = Math.round(annotator.entries[i].height * multiplier);
-                      annotator.entries[i].left = Math.round(annotator.entries[i].left * multiplier);
-                      annotator.entries[i].top = Math.round(annotator.entries[i].top * multiplier);
-                  }
                 annotator.onchange(annotator.entries);
               }
             }
@@ -280,7 +275,6 @@
 
     BBoxAnnotator.prototype.add_entry = function(entry) {
       var annotator, box_element, close_button, text_box;
-      this.entries.push(entry);
       box_element = $('<div class="annotated_bounding_box"></div>');
       box_element.appendTo(this.image_frame).css({
         "border": this.border_width + "px solid rgb(255,0,0)",
@@ -328,7 +322,7 @@
         "overflow": "hidden"
       });
       if (this.show_label) {
-        text_box.text(entry.label);
+        text_box.text($('input:radio:checked').val());
       }
       annotator = this;
       box_element.hover((function(e) {
@@ -339,6 +333,11 @@
       close_button.mousedown(function(e) {
         return annotator.hit_menuitem = true;
       });
+      entry.width = Math.round(entry.width * multiplier);
+      entry.height = Math.round(entry.height * multiplier);
+      entry.left = Math.round(entry.left * multiplier);
+      entry.top = Math.round(entry.top * multiplier);
+      this.entries.push(entry);
       close_button.click(function(e) {
         var clicked_box, index;
         clicked_box = close_button.parent(".annotated_bounding_box");

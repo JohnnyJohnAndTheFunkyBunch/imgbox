@@ -21,9 +21,125 @@
 
     <script src="js/bbox_annotator.js?v=3"></script>
 
+    <style>
+        .line {
+            margin-bottom: 0px;
+        }
+        .entry {
+            margin: 5px;
+            padding: 5px;
+            background-color: #f5f5f5;
+        }
+        .image_frame {
+            box-shadow: 3px 3px 3px #ddd;
+        }
+        #sortby {
+            cursor: default;
+            color:white;
+        }
+        #right_bar {
+            background-color: #f5f5f5;
+            border-left: 1px solid #eee;
+            overflow-x: hidden;
+            overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
+            height: 100vh;
+        }
+        #object_types {
+            border: 1px solid #eee;
+            background-color: white;
+            margin: 10px;
+            padding-left: 10px;
+            padding-right: 10px;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            box-shadow: 2px 2px 2px #ddd;
+        }
+        #next_images {
+            border: 1px solid #eee;
+            background-color: white;
+            margin: 10px;
+            padding-left: 10px;
+            padding-right: 10px;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            box-shadow: 2px 2px 2px #ddd;
+        }
+        #info_box {
+            border: 1px solid #eee;
+            background-color: white;
+            margin: 10px;
+            padding-left: 10px;
+            padding-right: 10px;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            box-shadow: 2px 2px 2px #ddd;
+        }
+        #annotated_box {
+            border: 1px solid #eee;
+            background-color: white;
+            margin: 10px;
+            padding-left: 10px;
+            padding-right: 10px;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            box-shadow: 2px 2px 1px #ddd;
+            min-height: 400px;
+        }
+        #annotator_buttons_right {
+            float: right;
+        }
+        #annotator_buttons_left {
+            float: left;
+        }
+        .boldme {
+            font-weight: bold;
+        }
+        .mythumbnail {
+            margin: 5px;
+            padding: 2px;
+        }
+        .thumb_container {
+            cursor: pointer;
+        }
+        .thumb_container:hover {
+            outline-color: black;
+            outline-style: outset;
+        }
+        .glyphicon-stop {
+            top: 25px;
+            left: 10px;
+        }
+        .urgent_week {
+            color: #3D4F7B;
+        }
+        .urgent_day {
+            color: #B6B74F;
+        }
+        .urgent_immediete {
+            color: #B8524F;
+        }
+        .border_immediete {
+            margin: 5px;
+            padding: 2px;
+            border: 1px solid red;
+        }
+        h3 {
+            margin: 5px;
+            margin-bottom: 10px;
+        }
+        #messages_box {
+            margin-top: 10px;
+        }
+        #message_line {
+            font-weight: Normal;
+        }
+        [ng\:cloak], [ng-cloak], .ng-cloak {
+          display: none !important;
+        }
+    </style>
   </head>
 
-  <body ng-controller="TaskController">
+  <body ng-controller="TaskController" ng-cloak>
 
     <nav class="navbar navbar-inverse navbar-fixed-top">
       <div class="container-fluid">
@@ -38,8 +154,9 @@
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-right">
-            <li><a href="#">Home</a></li>
-            <li><a href="#">Annotated Images</a></li>
+            <li><a id="sortby">Sort By: </a></li>
+            <li><a href="" id="most_important">Urgency</a></li>
+            <li><a href="" id="date_created">Date Created</a></li>
           </ul>
         </div>
       </div>
@@ -49,46 +166,78 @@
       <div class="row">
         <div class="col-sm-3 col-md-2 sidebar">
           <ul class="nav nav-sidebar">
-            <div class="radio" ng-repeat='object in objects_to_annotate'>
-              <label>
-                <input type="radio" name="optionsRadios" id="optionsRadios1" value="option1" checked>
-                {{object}}
-              </label>
+            <div id="object_types">
+                <h3>Objects</h3>
+                <div class="radio" ng-repeat='object in objects_to_annotate'>
+                  <label>
+                    <input type="radio" name="optionsRadios" id="optionsRadios1" value="{{object}}" checked>
+                    {{object}}
+                  </label>
+                </div>
             </div>
           </ul>
           <ul class="nav nav-sidebar">
-            <div class="alert alert-warning alert-dismissible" role="alert">
-              <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-              Box1
-            </div>
-            <div class="alert alert-warning alert-dismissible" role="alert">
-              <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-              Box2
+            <div id="next_images">
+                <h3>Up Next</h3>
+                <div class="mythumbnail" ng-repeat='task in tasks' ng-click='changeTask($index)'>
+                        <span class="glyphicon glyphicon-stop urgent_{{task.urgency}}" aria-hidden="true"></span>
+                    <div class="thumb_container">
+                        <img src="{{task.attachment}}" alt="{{task.task_id}}" width="100%">
+                    </div>
+                </div>
             </div>
           </ul>
-          <ul class="nav nav-sidebar">
-            <li class="active"><a href="#">Overview <span class="sr-only">(current)</span></a></li>
-            <li><a href="#">Maybe</a></li>
-            <li><a href="#">Useful</a></li>
-          </ul>
-
         </div>
         <div class="col-sm-9 col-sm-offset-3 col-md-7 col-md-offset-2 main">
           <div id="bbox_annotator" style="display:inline-block"></div>
-          <input class="btn btn-default" type="submit" value="Submit">
-          <input class="btn btn-default" type="submit" value="Reset" id="reset_button">
-          <input class="btn btn-default" type="submit" value="Broken" id="broken_button">
-          <h1 class="page-header">Messages</h1>
-          <p ng-bind="message"></p>
+          <div id="annotator_buttons_left">
+              <input class="btn btn-warning" type="submit" value="Reset" id="reset_button">
+              <input class="btn btn-danger" type="submit" value="Broken" id="broken_button" data-toggle="modal" data-target="#myModal">
+          </div>
+          <div id="annotator_buttons_right">
+              <input class="btn btn-primary" id="submit-btn" type="submit" value="Submit">
+          </div>
+          <div style="clear: both;"></div>
+          <div id="messages_box">
+              <h3 class="page-header">Message: <span id="message_line" ng-bind="message"></span></h3>
+          </div>
         </div>
-        <div class="col-md-3">
-            <h1>Info</h1>
-            <p>Task ID: {{task_id}}<p>
-            <p>Instruction: {{instruction}}<p>
-            <p>Urgency: {{urgency}}<p>
-            <img ng-repeat='task in tasks' src="{{task.attachment}}" alt="{{task.task_id}}" width="200">
-            <textarea id="annotation_data" name="annotation" rows="30" cols="30" style="font-family:monospace;" readonly></textarea>
+        <div class="col-md-3" id="right_bar">
+            <div id="info_box">
+                <h3>Info</h3>
+                <p><span class="boldme">Instruction:</span> {{instruction}}<p>
+                <p><span class="boldme">Task ID:</span> {{task_id}}<p>
+                <p><span class="boldme">Created at:</span> {{created_at}}<p>
+                <p><span class="boldme">With Labels:</span> {{with_labels ? 'true' : 'false'}}<p>
+                <p><span class="boldme">Urgency:</span> {{urgency}}<p>
+                <p><span class="boldme">Original Image:</span> <a href="{{attachment}}">Link</a><p>
+            </div>
+            <div id="annotated_box">
+                <h3>Annotations</h3>
+            </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="myModal" class="modal fade" role="dialog">
+      <div class="modal-dialog">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">Why is it an error?</h4>
+          </div>
+          <div class="modal-body">
+            <textarea class="form-control" rows="5" id="error_message"></textarea>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary" data-dismiss="modal" id="submit_error">Submit</button>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -102,27 +251,45 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
     <script type="text/javascript">
     var annotator;
+    var annotations = []
     function getParameterByName(name) {
       var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
       return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
     }
 
+    function addAnnotation (left, top, width, height, label) {
+        var html = '<div class="entry">' +
+                        '<p class="line"><span class="boldme">Object: </span>'+label+'</p>' +
+                        '<p class="line"><span class="boldme">Corner: </span>'+left+'x'+top+'</p>'+
+                        '<p class="line"><span class="boldme">Size: </span>'+width+'x'+height+'</p>' +
+                    '</div>'
+        $('#annotated_box').append(html);
+    }
+
     function renderTask (task) {
       // Can be one of ['text', 'select', 'fixed']
       var inputMethod = getParameterByName("input");
+      $("#bbox_annotator").empty()
+      $("#annotated_box").empty().append("<h3>Annotations</h3>");
       // Initialize the bounding-box annotator.
       annotator = new BBoxAnnotator({
         url: task.attachment,
         input_method: "fixed",
+        //input_method: "select",
         labels: task.objects_to_annotate,
-        onchange: function(entries, multiplier) {
+        onchange: function(entries) {
           // Input the text area on change. Use "hidden" input tag unless debugging.
           // <input id="annotation_data" name="annotation_data" type="hidden" />
           // $("#annotation_data").val(JSON.stringify(entries))
-          $("#annotation_data").text(JSON.stringify(entries, null, "  "));
+          //$("#annotation_data").text(JSON.stringify(entries, null, "  "));
+          $("#annotated_box").empty().append("<h3>Annotations</h3>");
+          for (i = 0; i < entries.length ; i++) {
+              addAnnotation(entries[i].left, entries[i].top, entries[i].width, entries[i].height, entries[i].label);
+          }
+          annotations = entries;
           console.log(entries); 
-          console.log(multiplier); 
-        }
+        },
+        radio: $('input:radio:checked')
       });
       // Initialize the reset button.
       $("#reset_button").click(function(e) {
@@ -133,7 +300,9 @@
     });
     </script>
     <script>
-        var current_task = {}
+        var current_task = {};
+        var current_index = 0;
+        var all_tasks = [];
         var app = angular.module('myApp', []);
 
         app.factory('socket', ['$rootScope', function($rootScope) {
@@ -148,10 +317,59 @@
             }
           };
         }]);
-
+        
         app.controller('TaskController', function($scope, socket) {
+            function load_task() {
+                $scope.task_id = current_task._id;
+                $scope.callback_url = current_task.callback_url;
+                $scope.attachment = current_task.attachment;
+                $scope.created_at = current_task.created_at;
+                $scope.instruction = current_task.instruction;
+                $scope.objects_to_annotate = current_task.objects_to_annotate;
+                $scope.urgency = current_task.urgency;
+                $scope.with_labels = current_task.with_labels;
+                renderTask(current_task);
+            }
+
+            $(document).keypress(function(e) {
+              if(e.which == 13) { //enter
+                //current_task = all_tasks[4];
+                //$scope.$apply(load_task);
+                socket.emit('reset','hello');
+              }
+            });
+
+            $("#submit-btn").click( function (event) {
+                event.preventDefault();
+                current_task.annotations = annotations; 
+                socket.emit("task", current_task);
+            });
+
+            $("#most_important").click( function (event) {
+                socket.emit("most_important");
+            });
+
+            $("#date_created").click( function (event) {
+                socket.emit("date_created");
+            });
+
+            $("#submit_error").click( function (event) {
+                console.log($("#error_message").val());
+                socket.emit("error_msg", {'task':current_task, 'error': $("#error_message").val()});
+            });
+
+            $scope.changeTask = function(index) {
+                current_task = all_tasks[index];
+                load_task();
+            };
             socket.on('connect', function () {
                 $scope.$apply(function() {
+                });
+            });
+            socket.on('message', function (msg) {
+                $scope.$apply(function() {
+                    console.log(msg);
+                    $scope.message = msg;
                 });
             });
             socket.on('task', function (msg) {
@@ -160,17 +378,15 @@
             });
             socket.on('tasks', function (msg) {
                 $scope.$apply(function() {
+                    all_tasks = msg.slice();
+                    if (all_tasks.length == 0) {
+                      $("#bbox_annotator").empty().append("<h1>You're all done. You can go home now</h1>");
+                      $("#annotated_box").empty().append("<h3>Annotations</h3>");
+                    }
                     current_task = msg[0];
-                    $scope.task_id = current_task._id;
-                    $scope.callback_url = current_task.callback_url;
-                    $scope.created_at = current_task.created_at;
-                    $scope.instruction = current_task.instruction;
-                    $scope.objects_to_annotate = current_task.objects_to_annotate;
-                    $scope.urgency = current_task.urgency;
-                    $scope.with_labels = current_task.with_labels;
-                    console.log(msg);
-                    renderTask(current_task);
-                    $scope.tasks = msg.splice(1);
+                    console.log(current_task);
+                    load_task();
+                    $scope.tasks = msg;
                     console.log(msg);
                 });
             });
