@@ -12,7 +12,7 @@ var request = require('request');
 var basic = auth.basic({
     realm: 'SUPER SECRET STUFF'
 }, function(username, password, callback) {
-    callback(username == 'APIKEY'); // Insert your own authentication methods
+    callback(username == 'MYTESTAPIKEY'); // Insert your own authentication methods
 });
 
 var basicfront = auth.basic({
@@ -49,6 +49,24 @@ app.get('/', authMiddlewarefront, function(req, res) {
 // ROUTES FOR OUR API
 // =============================================================================
 var router = express.Router(); // get an instance of the express Router
+
+router.get('/:task_id', authMiddleware, function(req, res) {
+    Task.findOne({
+        _id: req.params.task_id
+    }, function(err, task) {
+            if (err) {
+                res.send(err);
+            } else {
+                var mytask = JSON.parse(JSON.stringify(task));
+                mytask.task_id = mytask._id;
+                delete mytask.api_key;
+                delete mytask._id;
+                delete mytask.__v;
+                (mytask.response.annotations).map(function(e) {delete e._id});
+                res.json(mytask);
+            }
+    });
+});
 
 // Main entry point for image annotations
 router.post('/annotation', authMiddleware, function(req, res) {
@@ -132,9 +150,16 @@ io.on('connection', function(socket) {
             } else {
                 io.emit("message", "Task found, starting to save to database...");
                 task.completed_at = new Date();
-                task.response = {
-                    annotations: data.annotations
-                };
+                if (task.params.with_labels) {
+                    task.response = {
+                        annotations: data.annotations
+                    };
+                } else {
+                    (data.annotations).map(function(e) {delete e.label});
+                    task.response = {
+                        annotations: data.annotations
+                    };
+                }
                 task.status = "completed";
                 task.save(function(err) {
                     if (err) {
@@ -145,13 +170,14 @@ io.on('connection', function(socket) {
                         io.emit("message", "Saved to database successfully, now sending request...");
                         var jsonResponse = {};
                         var mytask = JSON.parse(JSON.stringify(task));
-                        var response = {};
+                        var response = JSON.parse(JSON.stringify(task.response))
                         var mytaskid = task._id
-                        response = task.response;
                         mytask.task_id = jsonResponse._id;
                         delete mytask.api_key;
                         delete mytask._id;
                         delete mytask.__v;
+                        (mytask.response.annotations).map(function(e) {delete e._id});
+                        (response.annotations).map(function(e) {delete e._id});
                         jsonResponse.task = mytask;
                         jsonResponse.response = response;
                         jsonResponse.task_id = mytaskid;
@@ -204,19 +230,22 @@ io.on('connection', function(socket) {
     // Sort by Urgency
     socket.on('most_important', function() {
         Task.find({
-            urgency: "immediete"
+            urgency: "immediete",
+            status: "pending"
         }, function(err, tasks) {
             if (err) {
                 io.emit("message", err);
             } else {
                 Task.find({
-                    urgency: "day"
+                    urgency: "day",
+                    status: "pending"
                 }, function(err, tasks2) {
                     if (err) {
                         io.emit("message", err);
                     } else {
                         Task.find({
-                            urgency: "week"
+                            urgency: "week",
+                            status: "pending"
                         }, function(err, tasks3) {
                             io.emit("tasks", tasks.concat(tasks2.concat(tasks3)))
                         });
@@ -228,7 +257,7 @@ io.on('connection', function(socket) {
 
     // Sort by Date Created
     socket.on('date_created', function() {
-        Task.find().sort('created_at').exec(function(err, tasks) {
+        Task.find({status: "pending"}).sort('created_at').exec(function(err, tasks) {
             io.emit("tasks", tasks);
         });
     });
