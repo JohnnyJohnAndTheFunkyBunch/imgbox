@@ -38,7 +38,7 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(bodyParser.json());
 
-var port = process.env.PORT || 8080; // set our port
+var port = process.env.PORT || 80; // set our port
 
 // Front End Page
 
@@ -55,18 +55,18 @@ router.post('/annotation', authMiddleware, function(req, res) {
     // create database entry of the task
     var task = new Task();
     task.instruction = req.body.instruction;
-    task.attachment = req.body.attachment;
+    task.params.attachment = req.body.attachment;
     if (!req.body.attachment) {
         res.send("Must specify a URL to an image");
     }
-    task.attachment_type = req.body.attachment_type;
+    task.params.attachment_type = req.body.attachment_type;
     if (req.body.objects_to_annotate.length == 0) {
         res.send("Must specify objects to annotate");
     }
-    task.objects_to_annotate = req.body.objects_to_annotate;
-    task.with_labels = false;
+    task.params.objects_to_annotate = req.body.objects_to_annotate;
+    task.params.with_labels = false;
     if (req.body.with_labels) {
-        task.with_labels = req.body.with_labels;
+        task.params.with_labels = req.body.with_labels;
     }
     task.urgency = "day";
     if (req.body.urgency) {
@@ -92,20 +92,13 @@ router.post('/annotation', authMiddleware, function(req, res) {
             res.send(err);
 
         // Send the json Response back to requester
-        var jsonResponse = {};
-        jsonResponse.task_id = task.id;
-        jsonResponse.callback_url = task.callback_url;
-        jsonResponse.type = "annotation";
-        jsonResponse.status = "pending";
-        jsonResponse.instruction = task.instruction;
-        jsonResponse.urgency = task.urgency;
-        var params = {};
-        params.attachment = task.attachment;
-        params.attachment_type = task.attachment_type;
-        params.objects_to_annotate = task.objects_to_annotate;
-        params.with_labels = task.with_labels;
-        jsonResponse.params = params;
+        var jsonResponse = JSON.parse(JSON.stringify(task));
 
+        jsonResponse.task_id = jsonResponse._id;
+        delete jsonResponse.api_key;
+        delete jsonResponse._id;
+        delete jsonResponse.__v;
+        delete jsonResponse.response;
         res.json(jsonResponse);
     });
 });
@@ -155,9 +148,10 @@ io.on('connection', function(socket) {
                         var response = {};
                         var mytaskid = task._id
                         response = task.response;
+                        mytask.task_id = jsonResponse._id;
                         delete mytask.api_key;
-                        mytask.task_id = task._id;
                         delete mytask._id;
+                        delete mytask.__v;
                         jsonResponse.task = mytask;
                         jsonResponse.response = response;
                         jsonResponse.task_id = mytaskid;

@@ -3,6 +3,7 @@
 ## Setup
 
 I assume you have Ubuntu 14.04
+
 Install Node
 ```
 curl -sL https://deb.nodesource.com/setup_4.x | sudo -E bash -
@@ -30,14 +31,14 @@ node server.js
 ```
 
 ## Using the web app
-The server should be served on port `8080`. You can then open the web app through `[your ip address]:8080` and it should look something like this:
+The server should be served on port `80`. You can then open the web app through `[your ip address]:80` and it should look something like this:
 
 ![alt text](Doc/image1.png)
 
 ## Using the annotation API entry point
 Just like the real ScaleAPI, you curl using these parameters:
 ```
-curl "http://[your ip address]:8080/api/task/annotation" \
+curl "http://[your ip address]/api/task/annotation" \
   -u YOUR_API_KEY: \
   -d callback_url="http://www.example.com/callback" \
   -d instruction="Draw a box around each baby cow and big cow." \
@@ -55,6 +56,7 @@ curl "http://[your ip address]:8080/api/task/annotation" \
 * Press Broken to write a message to why the task is invalid
 * You can click on an image on "Up Next" to change image to work on
 * You can sort by urgency or creation date
+* The left corner of the thumbnail represets the Urgency level
 
 ## Features to implement
 * Color code the bounding boxes depending on the object

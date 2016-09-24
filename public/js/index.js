@@ -25,7 +25,7 @@ function renderTask(task) {
     $("#annotated_box").empty().append("<h3>Annotations</h3>");
     // Initialize the bounding-box annotator.
     annotator = new BBoxAnnotator({
-        url: task.attachment,
+        url: task.params.attachment,
         input_method: "fixed",
         //input_method: "select",
         labels: task.objects_to_annotate,
@@ -80,12 +80,12 @@ app.controller('TaskController', function($scope, socket) {
     function load_task() {
         $scope.task_id = current_task._id;
         $scope.callback_url = current_task.callback_url;
-        $scope.attachment = current_task.attachment;
+        $scope.attachment = current_task.params.attachment;
         $scope.created_at = current_task.created_at;
         $scope.instruction = current_task.instruction;
-        $scope.objects_to_annotate = current_task.objects_to_annotate;
+        $scope.objects_to_annotate = current_task.params.objects_to_annotate;
         $scope.urgency = current_task.urgency;
-        $scope.with_labels = current_task.with_labels;
+        $scope.with_labels = current_task.params.with_labels;
         renderTask(current_task);
     }
 
