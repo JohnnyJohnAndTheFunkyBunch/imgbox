@@ -125,7 +125,6 @@ router.post('/annotation', authMiddleware, function(req, res) {
 // =============================================================================
 
 io.on('connection', function(socket) {
-    console.log("someone connected");
     Task.find({
         status: "pending"
     }, function(err, tasks) {
@@ -218,11 +217,35 @@ io.on('connection', function(socket) {
                 'error': data.error
             }
         };
-        request(options, function(err, response, body) {
+        Task.findOne({
+            _id: data.task._id
+        }, function(err, task) {
             if (err) {
-                io.emit("message", "Error sending request");
+                io.emit("message", err);
             } else {
-                io.emit("message", "Error successfully sent.");
+                task.status = 'completed'
+                task.save(function(err) {
+                    if (err) {
+                        io.emit("message", err);
+                    } else {
+                        request(options, function(err, response, body) {
+                            if (err) {
+                                io.emit("message", "Error sending request");
+                            } else {
+                                io.emit("message", "Error successfully sent.");
+                            }
+                        });
+                        Task.find({
+                            status: "pending"
+                        }, function(err, tasks) {
+                            if (err) {
+                                io.emit("message", err);
+                            } else {
+                                io.emit("tasks", tasks);
+                            }
+                        });
+                    }
+                });
             }
         });
     });
@@ -287,4 +310,4 @@ app.use(express.static('public'));
 // START THE SERVER
 // =============================================================================
 http.listen(port);
-console.log('Magic happens on port ' + port);
+console.log('Serving on port ' + port);
